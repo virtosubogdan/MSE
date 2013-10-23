@@ -16,10 +16,10 @@ module Ids=Map.Make(String);;
 (* -> Body' * isRecursive boolean*)
 module Funcs=Map.Make(String);;
 
-(* Custom type for keeping function parameter list and body. *)
-type body =Body of string list *expr* int Ids.t *body Funcs.t;;
+type 'b env=Env of int Ids.t * 'b Funcs.t ;;
 
-type env=Env of int Ids.t * body Funcs.t;;
+(* Custom type for keeping function parameter list and body. *)
+type body =Body of string list *expr* body env;;
 
 (* Prog type*)
 type prog = P of def list * expr;;
@@ -34,14 +34,14 @@ let rec evalFunc args body env=match env with Env(ids,funcs)->(
   match args with 
     hda::tla ->(
       match body with 
-	Body(hd::tl,ex,ids1,funcs1)->evalFunc tla 
-	    (Body(tl,ex,Ids.add hd (eval hda (Env(ids1,funcs1))) ids1,funcs1)) 
-	    (Env(Ids.add hd (eval hda (Env(ids1,funcs1))) ids1,funcs1))
-    (* evaluate the function with one less argument *)
-      |Body(_,ex,ids1,funcs1)->eval ex (Env(ids1,funcs1))
-    (* all arguments have been evaluated so call function *)
+	Body(hd::tl,ex,env1)->(match env1 with Env(ids1,funcs1) ->evalFunc tla 
+	  (Body(tl,ex,(Env((Ids.add hd (eval hda env1) ids1),funcs1))))
+	  (Env((Ids.add hd (eval hda env1) ids1),funcs1)))
+	(* evaluate the function with one less argument *)
+	|Body(_,ex,env1)->eval ex env1
     )
-  |[] -> (match body with Body(_,ex,ids1,funcs1)-> eval ex (Env(ids1,funcs1)))
+  (* all arguments have been evaluated so call function *)
+  |[] -> (match body with Body(_,ex,env1)-> eval ex env1)
 )
 (* expression evaluation
 x ->expresion to evaluate
@@ -64,8 +64,8 @@ args -> name of the function arguments
 ex -> function body (expression)
 func -> existing functions
 *)
-let deffunc name args ex env isRecursive=match env with 
-    Env(ids,funcs)->Funcs.add name (Body(args,ex,ids,funcs)) funcs;;
+let deffunc name args ex env isRecursive=match env with Env(ids,funcs)->
+  Funcs.add name (Body(args,ex,env)) funcs;;
 
 (* Define ids and functions
 def' d -> id or function to define
