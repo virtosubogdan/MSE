@@ -16,6 +16,7 @@ module Ids=Map.Make(String);;
 (* -> Body' * isRecursive boolean*)
 module Funcs=Map.Make(String);;
 
+(* Defined ids and function at one moment. *)
 type 'b env=Env of int Ids.t * 'b Funcs.t ;;
 
 (* Custom type for keeping function parameter list and body. *)
@@ -24,13 +25,22 @@ type body =Body of string list *expr* body env;;
 (* Prog type*)
 type prog = P of def list * expr;;
 
+(*debug flag*)
+let debug=true;;
+
+(* Environment debug function. *)
+let printEnv env tag=match env with Env(ids,funcs)->
+  Printf.printf("env from %s:\n") tag; 
+  Ids.iter (fun key value->Printf.printf ("Id:%s %d\n") key value) ids;
+  Funcs.iter (fun key value->Printf.printf ("F:%s\n") key) funcs;;
+
 (*
 args -> remaining arguments with which the function is called
 body -> (remaining arguments name,function body) for the function
 env -> (ids value that may include arguments that were evaluated,functions)
 *)
 let rec evalFunc args body env=match env with Env(ids,funcs)->(
-  Printf.printf  ("evaluating function %d %d\n") (List.length args) (Funcs.find "x3" ids);  
+  printEnv env "printFunc";  
   match args with 
     hda::tla ->(
       match body with 
