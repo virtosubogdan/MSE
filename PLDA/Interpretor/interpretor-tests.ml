@@ -1,37 +1,33 @@
-let x1=I(1);;
-let x2=I(2);;
-let id1=Id("id1");;
-let ids=Ids.add "id1" 1 Ids.empty;;
 
-eval id1 (Env(ids,Funcs.empty));;
-run(P(
+let test x= if x==1 then print_string("passed") else print_string("failed");;
+
+(*Generic test*)
+test (run(P(
   [
     Let("x3",Pl(I(2),I(1)));
     Let("x6",I(6));
     Letf("f",["x3";"a"],M(Id("a"),Id("x3")));
-    Let("true",Pl(I(1331),Id("x6")));
-    Let("false", M(I(111),Id("x6")))
   ],
-  If (Pl( M(x2, Pl(I(5),Id("x6")) ) ,I(22)),
-    Pl(F("f",[I(5);I(2)]),Id("x3")),
-    Id("false"))
-));;
+  If (Pl( M(I(2), Pl(I(5),Id("x6")) ) ,I(-22)),
+    I(0),
+    I(1))
+)));;
 
 (* Redefining test*)
-run(P(
+test (run(P(
   [
     Let("x3",Pl(I(2),I(1)));
     Let("x6",I(6));
     Letf("f",["x"],Pl(I(1),Id("x")));
     Letf("f",["x"],Pl(I(2),Id("x")));
-    Let("true",Pl(I(1331),Id("x6")));
-    Let("false", M(I(111),Id("x6")))
   ],
-  F("f",[Id("x3")])
-));;
+  If((Pl(F("f",[Id("x3")]),I(-5))),
+     I(0),
+     I(1))
+)));;
 
 (* Recursive test*)
-run(P(
+test (run(P(
   [
     Let("x3",Pl(I(2),I(1)));
     Let("x6",I(6));
@@ -39,9 +35,7 @@ run(P(
       (Pl(Id("x"),I(-4))),
       Id("x"),
       F("f",[Pl(Id("x"),I(2))])));
-    Let("true",Pl(I(1331),Id("x6")));
-    Let("false", M(I(111),Id("x6")))
   ],
-  F("f",[I(4)])
-));;
+  Pl(F("f",[I(4)]),I(-6))
+)));;
 
