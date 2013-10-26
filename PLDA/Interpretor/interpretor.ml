@@ -13,14 +13,14 @@ type def = Let of string*expr
 
 (* -> int *)
 module Ids=Map.Make(String);;
-(* -> Body' * isRecursive boolean*)
+(* -> Body'*)
 module Funcs=Map.Make(String);;
 
 (* Defined ids and function at one moment. *)
 type 'b env=Env of int Ids.t * 'b Funcs.t ;;
 
 (* Custom type for keeping function parameter list and body. *)
-type body =Body of string list *expr* body env;;
+type body =Body of string list *expr* body env * bool;;
 
 (* Prog type*)
 type prog = P of def list * expr;;
@@ -39,54 +39,73 @@ args -> remaining arguments with which the function is called
 body -> (remaining arguments name,function body) for the function
 env -> (ids value that may include arguments that were evaluated,functions)
 *)
-let rec evalFunc args body env=match env with Env(ids,funcs)->(
-  printEnv env "printFunc";  
+let rec evalFunc args body =(
   match args with 
     hda::tla ->(
       match body with 
-	Body(hd::tl,ex,env1)->(match env1 with Env(ids1,funcs1) ->evalFunc tla 
-	  (Body(tl,ex,(Env((Ids.add hd (eval hda env1) ids1),funcs1))))
-	  (Env((Ids.add hd (eval hda env1) ids1),funcs1)))
-	(* evaluate the function with one less argument *)
-	|Body(_,ex,env1)->eval ex env1
+	Body(hd::tl,ex,env1,isRec)->
+	  (match env1 with Env(ids1,funcs1) ->
+	    evalFunc tla 
+	      (Body(tl,ex,(Env((Ids.add hd hda ids1),funcs1)),isRec))
+	  )
+      (* evaluate the function with one less argument *)
+      |Body([],ex,env1,_)->eval ex env1
     )
   (* all arguments have been evaluated so call function *)
-  |[] -> (match body with Body(_,ex,env1)-> eval ex env1)
+  |[] -> (match body with Body(_,ex,env1,_)-> (eval ex env1))
+)
+(*
+Intermediar step to add recursive functions to their own environment.
+name-> of the function
+args-> evaluated arguments of the function
+body-> of the function
+*)
+and preEvalFunc name args body =(match body with Body(params,ex,env,isRec)->
+  if isRec
+    then match env with Env(ids,funcs)-> 
+      (evalFunc args (Body(params,ex,Env(ids,Funcs.add name body funcs),isRec)))
+    else (evalFunc args body)
+)
+(*
+Evaluates the function call arguments.
+This must be done in the enviroment in which the function is called.
+arg-> arguments to be evaluated
+env-> environment
+evaluations-> (stores the temporary result, the function should be called with [])
+*)
+and evalArgs args env evaluations=(match args with
+    hd::tl-> ((eval hd env)::(evalArgs tl env evaluations))
+  |[]-> []
 )
 (* expression evaluation
 x ->expresion to evaluate
 env-> (ids mix of local and global ids,functions)
 *)
 and eval x env=match x with I(a)->a
-  |Id(id)->(*print_string("\neval id:");print_string(a);*)
+  |Id(id)->(*printEnv env "before id eval";print_string("\neval id:");print_string(id);*)
      (match env with Env(ids,funcs) ->Ids.find id ids )
   |Pl(a,b)-> (eval a env) + (eval b env)
   |M(a,b)-> (eval a env) * (eval b env)
   |If(a,b,c) -> if (eval a env)!=0 then (eval b env) else (eval c env)
       (* find the function body and evaluate*)
-  |F(name,args)->
-    (match env with Env(ids,funcs)->evalFunc args (Funcs.find name funcs) env);;
-
-
-(* add the function body to the map of functions
-name -> of the function
-args -> name of the function arguments
-ex -> function body (expression)
-func -> existing functions
-*)
-let deffunc name args ex env isRecursive=match env with Env(ids,funcs)->
-  Funcs.add name (Body(args,ex,env)) funcs;;
+  |F(name,args)->(*printEnv env "Before eval func";*)
+    (match env with Env(ids,funcs)->(
+      preEvalFunc name (evalArgs args env []) (Funcs.find name funcs))
+    );;
 
 (* Define ids and functions
 def' d -> id or function to define
 env -> (ids,functions) that were defined
 *)
 let rec defin d env=match env with Env(ids,funcs)->(
+  (*printEnv env "Before definition:";*)
   match d with
     Let(name,value) ->(*print_string("\ndefin:");print_string(name);*)
       Env(Ids.add name (eval value env) ids,funcs)
-  |Letf(f,args,ex) -> Env(ids,deffunc f args ex env false) 
-  |Letfrec(f,args,ex)->Env(ids,deffunc f args ex env true)
+  |Letf(f,args,ex) -> 
+    Env(ids,Funcs.add f (Body(args,ex,env,false)) funcs) 
+  |Letfrec(f,args,ex)->
+    Env(ids,Funcs.add f (Body(args,ex,env,true)) funcs)
 );;
 
 (* Evaluate the program *)
