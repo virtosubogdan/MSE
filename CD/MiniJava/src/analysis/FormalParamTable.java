@@ -41,11 +41,11 @@ public class FormalParamTable {
 		return m_params.get(i);
 	}
 
-	public void print() {
-		System.out.println("FormatlParamTable:");
+	public void print(String prefix) {
+		System.out.println(prefix+"FormatlParamTable:");
 		int i = 0;
 		for (FormalParamRecord param : m_params) {
-			System.out.println(i + " " + param.getName() + " "
+			System.out.println(prefix+i + " " + param.getName() + " "
 					+ param.getType());
 			i++;
 		}

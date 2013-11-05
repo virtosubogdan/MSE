@@ -71,7 +71,8 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 		node.jjtGetChild(2).jjtAccept(this, data);
 		ClassRecord mainClass = m_classTable.addClass(nameIden.value, "Object");
 		FormalParamTable params = new FormalParamTable();
-		params.addParam(new FormalParamRecord(argumentsIdentifier.value, "int[]"));
+		params.addParam(new FormalParamRecord(argumentsIdentifier.value,
+				"int[]"));
 		MemberReference mainFunction = new MemberReference("main",
 				new String[] { "main", "int[]" }, "void", MemberType.METHOD,
 				params);
@@ -103,7 +104,7 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 	@Override
 	public Object visit(ASTVarDecl node, Object data) {
 		System.out.println("visitVarDecl");
-		ClassRecord clasa = (ClassRecord) data;
+		MemberOwner owner = (MemberOwner) data;
 		ASTType tip = (ASTType) node.jjtGetChild(0);
 		TypeData tipData = new TypeData();
 		tip.jjtAccept(this, tipData);
@@ -113,14 +114,14 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 		MemberReference defined = new MemberReference(idData.value,
 				new String[] { idData.value }, tipData.value, MemberType.FIELD,
 				null);
-		clasa.addMember(defined);
+		owner.addMember(defined);
 		return null;
 	}
 
 	@Override
 	public Object visit(ASTMethodDecl node, Object data) {
 		System.out.println("visitMethodDecl");
-		ClassRecord clasa = (ClassRecord) data;
+		MemberOwner clasa = (MemberOwner) data;
 		ASTType tip = (ASTType) node.jjtGetChild(0);
 		TypeData tipData = new TypeData();
 		tip.jjtAccept(this, tipData);
@@ -146,7 +147,7 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 				tipData.value, MemberType.METHOD, params);
 		clasa.addMember(defined);
 		for (int i = start; i < node.jjtGetNumChildren(); i++)
-			node.jjtGetChild(i).jjtAccept(this, clasa);
+			node.jjtGetChild(i).jjtAccept(this, defined);
 		return null;
 	}
 
@@ -220,7 +221,7 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 			// frame.setVisible(true);
 			SymbolTableVisitor visitor = new SymbolTableVisitor();
 			root.jjtAccept(visitor, null);
-			visitor.m_classTable.print();
+			visitor.m_classTable.print("");
 			visitor.m_types.print();
 			System.out.println("Thank you.");
 		} catch (Exception e) {

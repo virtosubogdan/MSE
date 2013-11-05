@@ -10,9 +10,7 @@ public class ClassTable {
 	private List<ClassRecord> m_table;
 	private TypeTable m_types;
 
-	
-	
-	public static class ClassRecord {
+	public static class ClassRecord implements MemberOwner {
 		private String name;
 		private int parentIndex;
 		private MemberTable members;
@@ -30,7 +28,8 @@ public class ClassTable {
 		public int getParentIndex() {
 			return parentIndex;
 		}
-		public void addMember(MemberReference member){
+
+		public void addMember(MemberReference member) {
 			members.addMember(member);
 		}
 	}
@@ -56,15 +55,15 @@ public class ClassTable {
 				+ " does not exist, so " + className + " cannot be defined");
 	}
 
-	public void print() {
+	public void print(String prefix) {
 		int i = 0;
 		for (ClassRecord clasa : m_table) {
-			System.out.println(i + " " + clasa.getName() + " "
+			System.out.println(prefix + i + " " + clasa.getName() + " "
 					+ clasa.getParentIndex());
-			clasa.members.print();
+			clasa.members.print(prefix + "    ");
 			System.out.println();
 			i++;
 		}
-		
+
 	}
 }
