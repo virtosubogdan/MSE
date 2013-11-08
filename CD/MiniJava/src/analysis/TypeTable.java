@@ -9,32 +9,32 @@ public class TypeTable {
 
 	public static class TypeRecord {
 		private String name;
-		private int generatingClassIndex;
+		private String parent;
 
-		public TypeRecord(String name, int index) {
+		public TypeRecord(String name, String parent) {
 			this.name = name;
-			this.generatingClassIndex = index;
+			this.parent = parent;
 		}
 
 		public String getName() {
 			return name;
 		}
 
-		public int getGeneratingClassIndex() {
-			return generatingClassIndex;
+		public String getParent() {
+			return parent;
 		}
 	}
 
 	public TypeTable() {
 		m_types = new ArrayList<TypeRecord>();
-		m_types.add(new TypeRecord("void", -1));
-		m_types.add(new TypeRecord("boolean", -1));
-		m_types.add(new TypeRecord("int", -1));
-		m_types.add(new TypeRecord("int[]", -1));
+		m_types.add(new TypeRecord("void", "-1"));
+		m_types.add(new TypeRecord("boolean", "-1"));
+		m_types.add(new TypeRecord("int", "-1"));
+		m_types.add(new TypeRecord("int[]", "-1"));
 	}
 
-	public void addType(String name, int index) {
-		m_types.add(new TypeRecord(name, index));
+	public void addType(String name, String parent) {
+		m_types.add(new TypeRecord(name, parent));
 	}
 
 	public int getType(String name) {
@@ -52,7 +52,7 @@ public class TypeTable {
 		for (int i = 0; i < m_types.size(); i++) {
 			TypeRecord type = m_types.get(i);
 			System.out.println(i + " " + type.getName() + " "
-					+ type.getGeneratingClassIndex());
+					+ type.getParent());
 		}
 	}
 }

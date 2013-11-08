@@ -30,6 +30,13 @@ public class FormalParamTable {
 	}
 
 	public void addParam(FormalParamRecord param) {
+		for (FormalParamRecord current : m_params) {
+			if (current.name.equals(param.name)) {
+				throw new RuntimeException(
+						"Cannot add formal parameters with the same name:"
+								+ param.name);
+			}
+		}
 		m_params.add(param);
 	}
 
@@ -42,12 +49,26 @@ public class FormalParamTable {
 	}
 
 	public void print(String prefix) {
-		System.out.println(prefix+"FormatlParamTable:");
+		System.out.println(prefix + "FormatlParamTable:");
 		int i = 0;
 		for (FormalParamRecord param : m_params) {
-			System.out.println(prefix+i + " " + param.getName() + " "
+			System.out.println(prefix + i + " " + param.getName() + " "
 					+ param.getType());
 			i++;
 		}
+	}
+
+	public boolean sameAs(FormalParamTable table) {
+		if (m_params.size() != table.size()) {
+			return false;
+		}
+		for (int i = 0; i < m_params.size(); i++) {
+			FormalParamRecord p1 = m_params.get(i);
+			FormalParamRecord p2 = table.m_params.get(i);
+			if (!p1.type.equals(p2.type)) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

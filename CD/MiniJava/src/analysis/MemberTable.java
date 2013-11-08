@@ -57,7 +57,26 @@ public class MemberTable {
 	}
 
 	public void addMember(MemberReference member) {
+		for (MemberReference current : m_members) {
+			if (current.getName().equals(member.getName())) {
+				verify(current, member);
+			}
+		}
 		m_members.add(member);
+	}
+
+	private void verify(MemberReference m1, MemberReference m2) {
+		if (m1.type == MemberType.FIELD && m2.type == MemberType.FIELD) {
+			throw new RuntimeException("Defining field with the same name:"
+					+ m2.name);
+		}
+		if (m1.type != m2.type) {
+			return;
+		}
+		if (m1.params.sameAs(m2.params)) {
+			throw new RuntimeException(
+					"Defining method with the same signature:" + m2.name);
+		}
 	}
 
 	public void print(String prefix) {

@@ -23,7 +23,7 @@ import dynamic.ASTVarDecl;
 import dynamic.MiniJavaVisitor;
 import dynamic.SimpleNode;
 
-public class SymbolTableVisitor implements MiniJavaVisitor {
+public class SymbolTableVerifier implements MiniJavaVisitor {
 
 	private ClassTable m_classTable;
 	private TypeTable m_types;
@@ -36,17 +36,9 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 		private String value;
 	}
 
-	public SymbolTableVisitor() {
-		m_types = new TypeTable();
-		m_classTable = new ClassTable(m_types);
-	}
-
-	public TypeTable getTypeTable() {
-		return m_types;
-	}
-
-	public ClassTable getClassTable() {
-		return m_classTable;
+	public SymbolTableVerifier(TypeTable types, ClassTable classTable) {
+		m_types = types;
+		m_classTable = classTable;
 	}
 
 	@Override
@@ -72,14 +64,6 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 		IdentifierData argumentsIdentifier = new IdentifierData();
 		node.jjtGetChild(1).jjtAccept(this, argumentsIdentifier);
 		node.jjtGetChild(2).jjtAccept(this, data);
-		ClassRecord mainClass = m_classTable.addClass(nameIden.value, "Object");
-		FormalParamTable params = new FormalParamTable();
-		params.addParam(new FormalParamRecord(argumentsIdentifier.value,
-				"int[]"));
-		MemberReference mainFunction = new MemberReference("main",
-				new String[] { "main", "int[]" }, "void", MemberType.METHOD,
-				params);
-		mainClass.addMember(mainFunction);
 		return null;
 	}
 
@@ -89,16 +73,13 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 		int startDeclaration = 1;
 		IdentifierData nameIden = new IdentifierData();
 		node.jjtGetChild(0).jjtAccept(this, nameIden);
-		ClassRecord clasa;
+		m_classTable.checkClass(nameIden.value);
+		ClassRecord clasa=m_classTable.getClass(nameIden.value);
 		if (node.jjtGetChild(1) instanceof ASTIdentifier) {
 			IdentifierData argumentsIdentifier = new IdentifierData();
 			node.jjtGetChild(1).jjtAccept(this, argumentsIdentifier);
 			startDeclaration = 2;
-			clasa = m_classTable.addClass(nameIden.value,
-					argumentsIdentifier.value);
-		} else {
-			clasa = m_classTable.addClass(nameIden.value, "Object");
-		}
+		} 
 		for (int i = startDeclaration; i < node.jjtGetNumChildren(); i++)
 			node.jjtGetChild(i).jjtAccept(this, clasa);
 		return null;
@@ -107,24 +88,18 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 	@Override
 	public Object visit(ASTVarDecl node, Object data) {
 		System.out.println("visitVarDecl");
-		MemberOwner owner = (MemberOwner) data;
 		ASTType tip = (ASTType) node.jjtGetChild(0);
 		TypeData tipData = new TypeData();
 		tip.jjtAccept(this, tipData);
 		IdentifierData idData = new IdentifierData();
 		ASTIdentifier identifier = (ASTIdentifier) node.jjtGetChild(1);
 		identifier.jjtAccept(this, idData);
-		MemberReference defined = new MemberReference(idData.value,
-				new String[] { idData.value }, tipData.value, MemberType.FIELD,
-				null);
-		owner.addMember(defined);
 		return null;
 	}
 
 	@Override
 	public Object visit(ASTMethodDecl node, Object data) {
 		System.out.println("visitMethodDecl");
-		MemberOwner clasa = (MemberOwner) data;
 		ASTType tip = (ASTType) node.jjtGetChild(0);
 		TypeData tipData = new TypeData();
 		tip.jjtAccept(this, tipData);
@@ -148,7 +123,6 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 		}
 		MemberReference defined = new MemberReference(idData.value, formalList,
 				tipData.value, MemberType.METHOD, params);
-		clasa.addMember(defined);
 		for (int i = start; i < node.jjtGetNumChildren(); i++)
 			node.jjtGetChild(i).jjtAccept(this, defined);
 		return null;
@@ -245,9 +219,8 @@ public class SymbolTableVisitor implements MiniJavaVisitor {
 		return null;
 	}
 
-	public void print() {
-		m_classTable.print("");
-		m_types.print();
+	public void print(){
+		
 	}
-
+	
 }
