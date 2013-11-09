@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE definition PUBLIC "-//objectweb.org//DTD Fractal ADL 2.0//EN" 
+"classpath://org/objectweb/fractal/adl/xml/basic.dtd">
+
+<definition name="nradl.AdlExpressions">
+  <interface name="r" role="server" signature="java.lang.Runnable"/>
+  <component name="printer" definition="nradl.NumberPrinter"/>
+  <component name="generator" definition="nradl.NumberGenerator"/>
+  <component name="plus" definition="nradl.Plus"/>
+  <component name="mul" definition="nradl.Multiply"/>
+
+  <binding client="this.r" server="printer.r"/>
+  <binding client="printer.n" server="mul.res"/>
+	<binding client="mul.a" server="plus.res"/>
+	<binding client="mul.b" server="generator.res"/>
+	<binding client="plus.a" server="generator.res"/>
+	<binding client="plus.b" server="generator.res"/>
+</definition>

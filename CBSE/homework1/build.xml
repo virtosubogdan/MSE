@@ -3,31 +3,63 @@
 	<description>
         Fractal implemented reconfigurable arithmetic expression evaluator.
     </description>
-	
+
 	<!-- set global properties for this build -->
-	<property environment="env"/>
-	
+	<property environment="env" />
+
 	<!-- set global properties for this build -->
 	<property name="src" location="src" />
 	<property name="build" location="bin" />
 	<property name="dist" location="dist" />
-	<property name="lib" value="../lib"/>
-	
+	<property name="lib" value="../lib" />
+	<property name="gen" value="${basedir}/generated" />
+	<property name="gen.spooned" value="${gen}/spooned" />
+	<property name="fractaladl-spoonlet-jar" value="fractaladl-spoonlet-3.0.3.jar" />
+	<property name="fractal-spoonlet-jar" value="fractal-spoonlet-3.0.3.jar" />
+
 	<path id="base.path">
 		<fileset dir="${lib}">
 			<include name="**/*.jar" />
 		</fileset>
 		<pathelement location="${build}" />
 	</path>
-	<pathconvert property="expanded.base.path" refid="base.path"/>
+	<pathconvert property="expanded.base.path" refid="base.path" />
 
 	<target name="init">
 		<tstamp />
 		<mkdir dir="${build}" />
+		<mkdir dir="${gen}" />
+		<mkdir dir="${gen.spooned}" />
 	</target>
 
 	<target name="compile" depends="init" description="compile the source ">
-		<javac srcdir="${src}" destdir="${build}" classpathref="base.path" includeantruntime="false"/>
+		<javac srcdir="${src}" destdir="${build}" classpathref="base.path" includeantruntime="false" />
+		<taskdef name="spoon" classname="spoon.SpoonTask" classpathref="base.path" />
+
+		<spoon classpathref="base.path" output="${gen.spooned}" spoonlet="${lib}/${fractaladl-spoonlet-jar}">
+			<sourceset dir="${src}" includes="**/*.java" />
+			<sourceset file="${lib}/${aval-jar}" />
+			<sourceset file="${lib}/${fraclet-annotations-jar}" />
+		</spoon>
+
+		<spoon classpathref="base.path" output="${gen.spooned}" spoonlet="${lib}/${fractal-spoonlet-jar}">
+			<sourceset dir="${src}" includes="**/*.java" />
+			<sourceset file="${lib}/${aval-jar}" />
+			<sourceset file="${lib}/${fraclet-annotations-jar}" />
+		</spoon>
+
+		<javac srcdir="${gen.spooned}" destdir="${build}" classpathref="base.path" includeantruntime="false" />
+
+		<copy todir="${build}" preservelastmodified="yes" includeEmptyDirs="false">
+			<fileset dir="${src}">
+				<include name="**/*.fractal" />
+			</fileset>
+		</copy>
+		<copy todir="${build}" preservelastmodified="yes" includeEmptyDirs="false">
+			<fileset dir="${gen.spooned}">
+				<include name="**/*.fractal" />
+			</fileset>
+		</copy>
 	</target>
 
 	<target name="dist" depends="compile" description="generate the distribution">
@@ -38,6 +70,13 @@
 	<target name="runPureJava" depends="compile">
 		<!--<echo message="Classpath:${expanded.base.path}"/>-->
 		<java classname="nr.ExpressionsPureJava" fork="true" classpathref="base.path">
+			<jvmarg value="-Dfractal.provider=org.objectweb.fractal.julia.Julia" />
+		</java>
+	</target>
+
+	<target name="runADL" depends="compile">
+		<java classname="org.objectweb.fractal.adl.Launcher" fork="true" classpathref="base.path">
+			<arg line="nradl.AdlExpressions" />
 			<jvmarg value="-Dfractal.provider=org.objectweb.fractal.julia.Julia" />
 		</java>
 	</target>
