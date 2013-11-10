@@ -21,6 +21,10 @@ public class Divider implements Number {
 		BigDecimal rightNr = (BigDecimal) right[0];
 		String leftStr = (String) left[1];
 		String rightStr = (String) right[1];
+		if(rightNr.equals(BigDecimal.ZERO)){
+			rightNr=BigDecimal.ONE;
+			rightStr+="//1";
+		}
 		return new Object[] { leftNr.divide(rightNr, 2, RoundingMode.HALF_UP),
 				"(" + leftStr + "/" + rightStr + ")" };
 	}

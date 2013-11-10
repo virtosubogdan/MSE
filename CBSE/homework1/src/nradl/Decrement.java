@@ -9,7 +9,7 @@ import org.objectweb.fractal.fraclet.annotations.Requires;
 @Component(provides = @Interface(name = "res", signature = nradl.Number.class))
 public class Decrement implements Number {
 
-	@Requires(name = "a")
+	@Requires(name = "decA")
 	private Number a;
 
 	public Object[] getNumber() {
