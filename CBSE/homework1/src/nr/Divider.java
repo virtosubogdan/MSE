@@ -13,7 +13,6 @@ public class Divider implements Number, BindingController {
 	private Number a;
 	private Number b;
 
-	@Override
 	public Object[] getNumber() {
 		Object[] left = a.getNumber();
 		Object[] right = b.getNumber();
@@ -25,7 +24,6 @@ public class Divider implements Number, BindingController {
 				"(" + leftStr + "/" + rightStr + ")" };
 	}
 
-	@Override
 	public void bindFc(String arg0, Object arg1)
 			throws NoSuchInterfaceException, IllegalBindingException,
 			IllegalLifeCycleException {
@@ -34,15 +32,12 @@ public class Divider implements Number, BindingController {
 		} else if (arg0.equals("b")) {
 			b = (Number) arg1;
 		}
-
 	}
 
-	@Override
 	public String[] listFc() {
 		return new String[] { "a", "b" };
 	}
 
-	@Override
 	public Object lookupFc(String arg0) throws NoSuchInterfaceException {
 		if (arg0.equals("a")) {
 			return a;
@@ -52,7 +47,6 @@ public class Divider implements Number, BindingController {
 		return null;
 	}
 
-	@Override
 	public void unbindFc(String arg0) throws NoSuchInterfaceException,
 			IllegalBindingException, IllegalLifeCycleException {
 		if (arg0.equals("a")) {
@@ -60,7 +54,6 @@ public class Divider implements Number, BindingController {
 		} else if (arg0.equals("b")) {
 			b = null;
 		}
-
 	}
 
 }

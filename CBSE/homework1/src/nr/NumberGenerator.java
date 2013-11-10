@@ -17,12 +17,10 @@ public class NumberGenerator implements Number, GeneratorAttributes {
 		return new Object[] { new BigDecimal(nr), "" + nr };
 	}
 
-	@Override
 	public int getLimit() {
 		return limit;
 	}
 
-	@Override
 	public void setLimit(int limit) {
 		this.limit = limit;
 	}

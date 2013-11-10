@@ -11,7 +11,6 @@ public class Increment implements Number, BindingController {
 
 	private Number a;
 
-	@Override
 	public Object[] getNumber() {
 		Object[] left = a.getNumber();
 		BigDecimal leftNr = (BigDecimal) left[0];
@@ -19,7 +18,6 @@ public class Increment implements Number, BindingController {
 		return new Object[] { leftNr.add(BigDecimal.ONE), "(" + leftStr + "++)" };
 	}
 
-	@Override
 	public void bindFc(String arg0, Object arg1)
 			throws NoSuchInterfaceException, IllegalBindingException,
 			IllegalLifeCycleException {
@@ -28,12 +26,10 @@ public class Increment implements Number, BindingController {
 		}
 	}
 
-	@Override
 	public String[] listFc() {
 		return new String[] { "a" };
 	}
 
-	@Override
 	public Object lookupFc(String arg0) throws NoSuchInterfaceException {
 		if (arg0.equals("a")) {
 			return a;
@@ -41,7 +37,6 @@ public class Increment implements Number, BindingController {
 		return null;
 	}
 
-	@Override
 	public void unbindFc(String arg0) throws NoSuchInterfaceException,
 			IllegalBindingException, IllegalLifeCycleException {
 		if (arg0.equals("a")) {
