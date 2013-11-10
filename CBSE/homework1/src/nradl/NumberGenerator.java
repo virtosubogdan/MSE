@@ -12,14 +12,15 @@ public class NumberGenerator implements Number {
 
 	private Random gen;
 	@Attribute(value = "10")
-	private String limit;
+	private String limit="10";
 
 	public NumberGenerator() {
 		gen = new Random();
 	}
 
 	public Object[] getNumber() {
-		int nr = gen.nextInt(Integer.valueOf(limit));
+		int l = Integer.valueOf(limit);
+		int nr = gen.nextInt(l);
 		return new Object[] { new BigDecimal(nr), "" + nr };
 	}
 

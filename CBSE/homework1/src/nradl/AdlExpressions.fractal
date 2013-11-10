@@ -11,8 +11,8 @@
 
   <binding client="this.r" server="printer.r"/>
   <binding client="printer.n" server="mul.res"/>
-	<binding client="mul.a" server="plus.res"/>
-	<binding client="mul.b" server="generator.res"/>
-	<binding client="plus.a" server="generator.res"/>
-	<binding client="plus.b" server="generator.res"/>
+	<binding client="mul.mulA" server="plus.res"/>
+	<binding client="mul.mulB" server="generator.res"/>
+	<binding client="plus.plusA" server="generator.res"/>
+	<binding client="plus.plusB" server="generator.res"/>
 </definition>

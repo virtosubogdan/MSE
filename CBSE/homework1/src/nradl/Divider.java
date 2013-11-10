@@ -9,9 +9,9 @@ import org.objectweb.fractal.fraclet.annotations.Requires;
 @Component(provides = @Interface(name = "res", signature = nradl.Number.class))
 public class Divider implements Number {
 
-	@Requires(name = "a")
+	@Requires(name = "divA")
 	private Number a;
-	@Requires(name = "b")
+	@Requires(name = "divB")
 	private Number b;
 
 	public Object[] getNumber() {

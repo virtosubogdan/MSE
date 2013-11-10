@@ -81,6 +81,12 @@
 		</java>
 	</target>
 
+	<target name="runDynamic" depends="compile">
+		<java classname="nradl.ExpressionsDynamic" fork="true" classpathref="base.path">
+			<jvmarg value="-Dfractal.provider=org.objectweb.fractal.julia.Julia" />
+		</java>
+	</target>
+
 	<target name="clean" description="clean up">
 		<delete dir="${build}" />
 		<delete dir="${dist}" />

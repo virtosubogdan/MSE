@@ -8,9 +8,9 @@ import org.objectweb.fractal.fraclet.annotations.Requires;
 
 @Component(provides = @Interface(name = "res", signature = nradl.Number.class))
 public class Minus implements Number {
-	@Requires(name = "a")
+	@Requires(name = "minA")
 	private Number a;
-	@Requires(name = "b")
+	@Requires(name = "minB")
 	private Number b;
 
 	public Object[] getNumber() {

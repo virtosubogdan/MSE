@@ -8,9 +8,9 @@ import org.objectweb.fractal.fraclet.annotations.Requires;
 
 @Component(provides = @Interface(name = "res", signature = nradl.Number.class))
 public class Multiply implements Number {
-	@Requires(name = "a")
+	@Requires(name = "mulA")
 	private Number a;
-	@Requires(name = "b")
+	@Requires(name = "mulB")
 	private Number b;
 
 	public Object[] getNumber() {
