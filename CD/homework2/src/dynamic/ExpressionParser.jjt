@@ -29,6 +29,8 @@ public class ExpressionParser
 	    	ASTStart root = p.Start();
 	    	PolishPrefixVisitor ppVisitor=new PolishPrefixVisitor();
 	    	root.jjtAccept(ppVisitor,null);
+	    	PolishPostfixVisitor ppostVisitor=new PolishPostfixVisitor();
+            root.jjtAccept(ppostVisitor,null);
 	    	NormalVisitor normalVisitor=new NormalVisitor();
 	    	root.jjtAccept(normalVisitor,null);
 	    	EvaluateVisitor evalVisitor=new EvaluateVisitor();
