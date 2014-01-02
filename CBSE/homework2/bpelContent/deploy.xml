@@ -36,10 +36,28 @@
       <service name="sample:SubxService" port="SubxPort"/>
     </provide>
   </process>
-   <process name="sample:Divx">
+  <process name="sample:Divx">
     <process-events generate="all"/>
     <provide partnerLink="client">
       <service name="sample:DivxService" port="DivxPort"/>
     </provide>
+  </process>
+  <process name="sample:Expresie2">
+    <process-events generate="all"/>
+    <provide partnerLink="client">
+      <service name="sample:Expresie2Service" port="Expresie2Port"/>
+    </provide>
+    <invoke partnerLink="padd">
+      <service name="sample:AddxService" port="AddxPort"/>
+    </invoke>
+    <invoke partnerLink="pminus">
+      <service name="sample:SubxService" port="SubxPort"/>
+    </invoke>
+    <invoke partnerLink="pmul">
+      <service name="sample:MulxService" port="MulxPort"/>
+    </invoke>
+        <invoke partnerLink="pdiv">
+      <service name="sample:DivxService" port="DivxPort"/>
+    </invoke>
   </process>
 </deploy>
