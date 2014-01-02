@@ -5,14 +5,16 @@
 <definition name="nradl.AdlExpressions">
   <interface name="r" role="server" signature="java.lang.Runnable"/>
   <component name="printer" definition="nradl.NumberPrinter"/>
-  <component name="generator" definition="nradl.NumberGenerator"/>
+  <component name="generator0" definition="nradl.NumberGenerator"/>
+  <component name="generator1" definition="nradl.NumberGenerator"/>
+  <component name="generator2" definition="nradl.NumberGenerator"/>
   <component name="plus" definition="nradl.Plus"/>
   <component name="mul" definition="nradl.Multiply"/>
 
   <binding client="this.r" server="printer.r"/>
   <binding client="printer.n" server="mul.res"/>
 	<binding client="mul.mulA" server="plus.res"/>
-	<binding client="mul.mulB" server="generator.res"/>
-	<binding client="plus.plusA" server="generator.res"/>
-	<binding client="plus.plusB" server="generator.res"/>
+	<binding client="mul.mulB" server="generator0.res"/>
+	<binding client="plus.plusA" server="generator1.res"/>
+	<binding client="plus.plusB" server="generator2.res"/>
 </definition>

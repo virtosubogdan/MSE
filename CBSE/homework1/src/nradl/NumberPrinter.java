@@ -11,8 +11,17 @@ public class NumberPrinter implements Runnable {
 	private Number nr;
 
 	public void run() {
-		Object[] result = nr.getNumber();
-		System.out.println("Operation: " + result[1]);
-		System.out.println("Result: " + result[0]);
+		try {
+			while (!Thread.currentThread().isInterrupted()) {
+				Object[] result = nr.getNumber();
+				System.out.println("Operation: " + result[1]);
+				System.out.println("Result: " + result[0]);
+				synchronized (this) {
+					wait(1500);
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace(System.out);
+		}
 	}
 }

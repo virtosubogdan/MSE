@@ -1,6 +1,8 @@
 package nradl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.objectweb.fractal.api.Component;
 import org.objectweb.fractal.api.Interface;
@@ -18,6 +20,7 @@ public class ExpressionsDynamic {
 	private Component root;
 	private ComponentType runnableType;
 	private ComponentType generatorType;
+	private ComponentType numberType;
 	private ComponentType printerType;
 	private ComponentType plusType;
 	private ComponentType multiplyType;
@@ -26,6 +29,7 @@ public class ExpressionsDynamic {
 	private ComponentType incType;
 	private ComponentType decType;
 	private BigDecimal limit = new BigDecimal(40);
+	private List<GeneratorThread> m_generators;
 
 	private static class Reference {
 		private Component comp;
@@ -39,15 +43,18 @@ public class ExpressionsDynamic {
 
 	public ExpressionsDynamic() throws Exception {
 		System.out.println("ExpressionsDynamic");
+		m_generators = new ArrayList<GeneratorThread>();
 		createTypes();
 		createAndBindComponents();
 	}
 
 	private void reconfigure() throws Exception {
+		System.out.println("reconfigure start");
 		for (Component comp : Fractal.getContentController(root)
 				.getFcSubComponents()) {
 			reconfigure(comp);
 		}
+		System.out.println("reconfigure stop");
 	}
 
 	private void reconfigure(Component comp) throws Exception {
@@ -94,13 +101,16 @@ public class ExpressionsDynamic {
 				.lookupFc("plusA"));
 		Reference plusBComp = serverOf(Fractal.getBindingController(plus)
 				.lookupFc("plusB"));
-		stop();
 		Component minus = cf.newFcInstance(minusType, "primitive",
 				"nradl.Minus");
+		Fractal.getLifeCycleController(plus).stopFc();
+		Fractal.getLifeCycleController(user.comp).stopFc();
 		Fractal.getBindingController(user.comp).unbindFc(user.interfaceName);
 		Fractal.getBindingController(plus).unbindFc("plusA");
 		Fractal.getBindingController(plus).unbindFc("plusB");
+		Fractal.getLifeCycleController(root).stopFc();
 		Fractal.getContentController(root).removeFcSubComponent(plus);
+		Fractal.getLifeCycleController(root).startFc();
 		Fractal.getContentController(root).addFcSubComponent(minus);
 		Fractal.getBindingController(user.comp).bindFc(user.interfaceName,
 				minus.getFcInterface("res"));
@@ -109,7 +119,8 @@ public class ExpressionsDynamic {
 				plusAComp.comp.getFcInterface("res"));
 		Fractal.getBindingController(minus).bindFc("minB",
 				plusBComp.comp.getFcInterface("res"));
-		start();
+		Fractal.getLifeCycleController(minus).startFc();
+		Fractal.getLifeCycleController(user.comp).startFc();
 	}
 
 	private void reconfigureMul(Component mul) throws Exception {
@@ -159,8 +170,9 @@ public class ExpressionsDynamic {
 				+ Fractal.getNameController(comp).getFcName());
 		Reference user = clientOf((Interface) comp.getFcInterface("res"));
 		stop();
-		Component g10 = cf.newFcInstance(generatorType, "primitive",
-				"nradl.StaticNumber");
+		Component g10 = cf.newFcInstance(numberType, "primitive",
+				"nradl.StaticNumberGenerator");
+		((StaticNumber) g10.getFcInterface("static")).setValue(10);
 		Component divider = cf.newFcInstance(dividerType, "primitive",
 				"nradl.Divider");
 		Fractal.getBindingController(user.comp).unbindFc(user.interfaceName);
@@ -186,8 +198,9 @@ public class ExpressionsDynamic {
 				+ Fractal.getNameController(comp).getFcName());
 		Reference user = clientOf((Interface) comp.getFcInterface("res"));
 		stop();
-		Component g2 = cf.newFcInstance(generatorType, "primitive",
+		Component g2 = cf.newFcInstance(numberType, "primitive",
 				"nradl.StaticNumber2");
+		((StaticNumber) g2.getFcInterface("static")).setValue(2);
 		Component minus = cf.newFcInstance(minusType, "primitive",
 				"nradl.Minus");
 		Fractal.getBindingController(user.comp).unbindFc(user.interfaceName);
@@ -239,8 +252,14 @@ public class ExpressionsDynamic {
 				tf.createFcItfType("r", "java.lang.Runnable", false, false,
 						false),
 				tf.createFcItfType("n", "nradl.Number", true, false, false) });
-		generatorType = tf.createFcType(new InterfaceType[] { tf
-				.createFcItfType("res", "nradl.Number", false, false, false) });
+		generatorType = tf.createFcType(new InterfaceType[] {
+				tf.createFcItfType("res", "nradl.Number", false, false, false),
+				tf.createFcItfType("genAttr", "nradl.Generator", false, false,
+						false) });
+		numberType = tf.createFcType(new InterfaceType[] {
+				tf.createFcItfType("res", "nradl.Number", false, false, false),
+				tf.createFcItfType("static", "nradl.StaticNumber", false,
+						false, false) });
 		plusType = tf
 				.createFcType(new InterfaceType[] {
 						tf.createFcItfType("plusA", "nradl.Number", true,
@@ -292,10 +311,6 @@ public class ExpressionsDynamic {
 
 	}
 
-	private void run() throws Exception {
-		((java.lang.Runnable) root.getFcInterface("r")).run();
-	}
-
 	private void stop() throws Exception {
 		Fractal.getLifeCycleController(root).stopFc();
 	}
@@ -306,15 +321,15 @@ public class ExpressionsDynamic {
 		Component printer = cf.newFcInstance(printerType, "primitive",
 				"nradl.NumberPrinter");
 		Component generator0 = cf.newFcInstance(generatorType, "primitive",
-				"nradl.StaticNumberGenerator");
+				"nradl.NumberGenerator");
 		Component generator1 = cf.newFcInstance(generatorType, "primitive",
-				"nradl.StaticNumberGenerator");
+				"nradl.NumberGenerator");
 		Component generator2 = cf.newFcInstance(generatorType, "primitive",
-				"nradl.StaticNumberGenerator");
+				"nradl.NumberGenerator");
 		Component generator3 = cf.newFcInstance(generatorType, "primitive",
-				"nradl.StaticNumberGenerator");
+				"nradl.NumberGenerator");
 		Component generator4 = cf.newFcInstance(generatorType, "primitive",
-				"nradl.StaticNumberGenerator");
+				"nradl.NumberGenerator");
 		Component plus1 = cf.newFcInstance(plusType, "primitive", "nradl.Plus");
 		Component mul1 = cf.newFcInstance(multiplyType, "primitive",
 				"nradl.Multiply");
@@ -323,6 +338,17 @@ public class ExpressionsDynamic {
 				"nradl.Divider");
 		Component inc1 = cf.newFcInstance(incType, "primitive",
 				"nradl.Increment");
+		m_generators.add(new GeneratorThread((Generator) generator0
+				.getFcInterface("genAttr")));
+		m_generators.add(new GeneratorThread((Generator) generator1
+				.getFcInterface("genAttr")));
+		m_generators.add(new GeneratorThread((Generator) generator2
+				.getFcInterface("genAttr")));
+		m_generators.add(new GeneratorThread((Generator) generator3
+				.getFcInterface("genAttr")));
+		m_generators.add(new GeneratorThread((Generator) generator4
+				.getFcInterface("genAttr")));
+
 		Fractal.getNameController(root).setFcName("ROOT");
 		Fractal.getContentController(root).addFcSubComponent(printer);
 		Fractal.getNameController(printer).setFcName("printer");
@@ -379,14 +405,59 @@ public class ExpressionsDynamic {
 	}
 
 	public static void main(String args[]) {
+		final Object SYNC = new Object();
 		try {
 			ExpressionsDynamic app = new ExpressionsDynamic();
+			for (Thread thread : app.m_generators) {
+				thread.start();
+			}
 			app.start();
-			app.run();
-			app.reconfigure();
-			app.run();
+			System.out.println("t0");
+			Thread thrApp = new Thread(
+					(java.lang.Runnable) app.root.getFcInterface("r"));
+			thrApp.start();
+			System.out.println("t1");
+			for (int i = 0; i < 5; i++) {
+				System.out.println("t2 " + i);
+				app.reconfigure();
+				try {
+					synchronized (SYNC) {
+						SYNC.wait(3000);
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace(System.out);
+				}
+			}
+			System.out.println("t3");
+			thrApp.interrupt();
+			for (Thread thread : app.m_generators) {
+				thread.interrupt();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+
+	private static class GeneratorThread extends Thread {
+
+		private Generator gen;
+
+		private GeneratorThread(Generator gen) {
+			this.gen = gen;
+		}
+
+		public void run() {
+			try {
+				while (!isInterrupted()) {
+					gen.changeNumber();
+					synchronized (this) {
+						wait(1000);
+					}
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace(System.out);
+			}
+		}
+	}
+
 }
