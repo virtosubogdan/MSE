@@ -7,6 +7,10 @@ type expr= Num
 	    |Expr of expr * expr;;
 type tip=Int|Arr of tip*tip|V of string;;
 
+
+
+
+(*
 let new_count =
  let r = ref 0 in
  let next () = r := !r+1; !r in
@@ -94,10 +98,14 @@ fun x0 -> fun x1 -> x0 (x0 x1);;
 
 
 fun x0 -> fun x1 -> fun x2 -> fun x3 -> x0 (x0 x1) (x0 x1 x2) (x0 x1 x2 x3);;
+*)
 
 
-(*
 open Scanf
+
+type expr = Var of string        (* only lambda calculus, no ints *)
+            | Fun of string * expr
+            | Call of expr * expr
 
 let skipspace() = scanf "%_[\t\011\012\r ]" ()
 
@@ -119,8 +127,10 @@ let rec term outer =         (* fun ... -> ... needs () unless outer *)
 and expr() =
   let rec restexpr t =
     skipspace();
-    scanf "%0c" (function '\n' | ')' -> t | _ -> restexpr (Call (t, term false)))
+    scanf "%0c" (function 
+  '\n' | ')' -> t 
+    |   _ -> restexpr (Call (t, term false)))
   in restexpr (term true)
 
 let readexpr () = let e = expr() in scanf "\n" (); e
-*)
+
