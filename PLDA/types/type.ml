@@ -8,9 +8,6 @@ type expr= Num
 type tip=Int|Arr of tip*tip|V of string;;
 
 
-
-
-(*
 let new_count =
  let r = ref 0 in
  let next () = r := !r+1; !r in
@@ -43,27 +40,24 @@ let pm m=Printf.printf "Map:\n";S.iter (fun a b->Printf.printf "%s : %s\n" a (sh
 let rec unify m =function
   |(Arr(a,a1),Arr(b,b1))-> Printf.printf "unify ar %s to ar %s\n" (shp (Arr(a,a1))) (shp (Arr(b,b1)));
       (match unify m (a,b) with m1 -> unify m1 (a1,b1))
-  |(V(a),tip)->Printf.printf "unify %s to type %s\n" a (shp tip);S.add a tip m
+  |(V(numea),V(numeb))->if numea=numeb then m else S.add numea (V(numeb)) m
+  |(V(a),tip)->Printf.printf "unify %s to type %s\n" a (shp tip); S.add a tip m
   |(Int,Int)->m;
   |(Arr(a,a1),V(b))->unify m (V(b),Arr(a,a1))
   |(Arr(a,a1),Int)->failwith "cannot match function with Int";
   |(Int,V(b))-> unify m (V(b),Int);
   |(Int,Arr(a,a1))->failwith "cannot match Int to function";; 
 
-
-(*
-
-user chooses if to see next solution.
-sigma is a map;
-*)
-
-
 let unif m=function 
   |(a,b) ->Printf.printf "unif %s with %s\n" (shp (expand m a)) (shp (expand m b));
       unify m (expand m a,expand m b);;
 
 let rec tipOf m =function 
-  | If (a,b,c)-> tipOf m a
+  | If (a,b,c)-> (match tipOf m a with (ma,ta)->
+    match unify ma (ta,Int) with mma->
+      match tipOf mma b with (mb,tb)->
+	match tipOf mb c with (mc,tc)->
+	  (unify mc (tb,tc),tc) )
   |Num -> (m,Int)
   |Var(nume) -> 
      if has m nume 
@@ -74,63 +68,47 @@ let rec tipOf m =function
 			(mres,Arr(S.find nume mres,tip))
 		     )
   |Expr(a,b)->Printf.printf "e";(match tipOf m a with (m1,tipa) ->
-		 (match (tipOf m1 b,nv()) with ((m2,tipb),nv) -> 
-		    Printf.printf "Expr %s to %s \n" (shp tipa) (shp tipb);
-		    (unif m2 ( tipa ,Arr(tipb,V(nv))),V(nv))
+    (match (tipOf m1 b,nv()) with ((m2,tipb),nv) -> 
+		   Printf.printf "Expr %s to %s \n" (shp tipa) (shp tipb);
+		   (unif m2 ( tipa ,Arr(tipb,V(nv))),V(nv))
 		 )
-	      );;
-	       (* _ -> "?";;*)
+  )
+  |Add(a,b)->(match tipOf m a with (ma,ta)->
+    match tipOf m b with (mb,tb)->
+      (unify (unify mb (ta,Int)) (tb,Int),Int));;
+	     
 
 
-printtip (tipOf S.empty (Fun ("x0",Fun("x1",Expr(Var("x0"),Expr(Var("x0"),Var("x1")))))));;
-
-fun x0 -> fun x1 -> x0 (x0 x1);;
-		   
-
-	    let x=Fun("x0",
-		 Fun("x1",
-		     Fun("x2",
-			 Fun("x3",
-			     Expr(Expr(Expr(Var("x0"),
-			       Expr(Var("x0"),Var("x1"))),
-				       Expr(Expr(Var("x0"),Var("x1")),Var("x2"))),
-				  Expr(Expr(Expr(Var("x0"),Var("x1")),Var("x2")),Var("x3")))))));;
+(*printtip (tipOf S.empty (Fun ("x0",Fun("x1",Expr(Var("x0"),Expr(Var("x0"),Var("x1")))))));;*)
 
 
-fun x0 -> fun x1 -> fun x2 -> fun x3 -> x0 (x0 x1) (x0 x1 x2) (x0 x1 x2 x3);;
-*)
-
-
-open Scanf
-
-type expr = Var of string        (* only lambda calculus, no ints *)
-            | Fun of string * expr
-            | Call of expr * expr
-
-let skipspace() = scanf "%_[\t\011\012\r ]" ()
-
-let rec term outer =         (* fun ... -> ... needs () unless outer *)
-  skipspace();
-  try scanf "(" ();
-      let r = expr() in (
-        skipspace();
-        try scanf ")" (); r
-        with End_of_file | Scan_failure _ -> failwith "missing )")
-  with Scan_failure _ -> scanf "%[0-9A-Za-z_]" (fun s ->
-    if s = "" then failwith "term expected"
-    else if s <> "fun" then Var s
-    else if outer then (skipspace (); 
-                        scanf "%[0-9A-Za-z_]" (fun s ->
-                          skipspace(); scanf "->" (); 
-                          Fun (s, expr())))
-    else failwith "need () around fun _ -> ...")
-and expr() =
-  let rec restexpr t =
-    skipspace();
-    scanf "%0c" (function 
-  '\n' | ')' -> t 
-    |   _ -> restexpr (Call (t, term false)))
-  in restexpr (term true)
-
-let readexpr () = let e = expr() in scanf "\n" (); e
-
+let x3=Fun("x3",Var("x3"));;
+fun x2->fun x3-> x2 (x2 x3);;
+let x2=Fun("x2",Fun("x3",Expr(Var("x2"),Expr(Var("x2"),Var("x3")))));;
+fun x1->fun x2->fun x3 -> x1 (x1 x2) (x1 x2 x3);; 
+let x1=Fun("x1",Fun("x2",Fun("x3",
+			     Expr(Expr(Var("x1"),Expr(Var("x1"),Var("x2")))
+			       ,Expr(Expr(Var("x1"),Var("x2")),Var("x3"))
+			     ))));;
+fun x0 -> fun x1 -> fun x2 -> fun x3 -> 
+  (
+    (x0 (x0 x1)) 
+      ((x0 x1) x2))
+    (((x0 x1) x2) 
+	x3
+    );;
+let x0=Fun("x0",Fun("x1",Fun("x2",Fun("x3",Expr
+  (Expr
+     (Expr(Var("x0"),Expr(Var("x0"),Var("x1")))
+	,Expr(Expr(Var("x0"),Var("x1")),Var("x2"))
+     ),
+   Expr
+     (Expr(Expr(Var("x0"),Var("x1")),Var("x2"))
+	,Var("x3")
+     )
+  )
+))));;
+let tipIf=Fun("x0",If(Var("x0"),Var("x0"),Var("x0")));;
+let tipAdd=Fun("x0",Add(Var("x0"),Var("x0")));;
+printtip (tipOf S.empty x0);;
+      
